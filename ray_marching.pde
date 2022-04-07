@@ -4,12 +4,14 @@ final int noise_amt = 8;
 final float max_ray_dist = 50, max_marching_steps = 400;
 final float mouse_sens = 0.01, cam_spd = 2.0;
 final color sky_color = color(81);
-final int max_ray_bounce = 3;
-final float ray_hit_dist = 0.0005; //at what distance to the scene will a ray be considered to have hit an object
+final int max_ray_bounce = 4;
+final float ray_hit_dist = 0.0004; //at what distance to the scene will a ray be considered to have hit an object
+final float shadows_k = 8;
 // -------------------------------------------------------------------------------------
 
 boolean reflections_enabled = true;
 boolean occlusion_enabled = true;
+boolean is_lowres = true;
 
 final float d = 1 / tan(fov / 2);
 PVector cam_pos;
@@ -50,8 +52,8 @@ void setup() {
 
   //wireframe box
   ShapeDiff df = new ShapeDiff(
-    new Box(-5, -1.5, 4,  2, 2, 2), 
-    new Sphere(-5, -1.5, 4,  2.5)
+    new Box(-5, -1, 4,  2, 2, 2), 
+    new Sphere(-5, -1, 4,  2.5)
   );
   df.col = color(38, 123, 76);
   shapes.add(df);
@@ -75,17 +77,14 @@ void setup() {
 void draw() {
   delta = ( millis() * 0.001 ) - prev_time;
   prev_time = millis() * 0.001;
-  
-  
-  
-  background(sky_color);
 
-  loadPixels();
-  calc_rays();
-  updatePixels();
-  //display_pixels();
-  
-  noise_step -= 1;
+  if (noise_step > 0) {
+    loadPixels();
+    calc_rays();
+    updatePixels();
+    
+    noise_step -= 1;
+  }
 
   //moving cam
   PVector cam_vel = new PVector(0, 0, 0);
@@ -103,13 +102,15 @@ void draw() {
   // CAMERA ROTATION -----------------------------------------------------------------
   if (cam_control) {
     float dy = mouseX - pmouseX;
-
     cam_angle.y += dy * mouse_sens;
     noise_step = noise_amt;
   }
+  
+  if (is_lowres)
+    noise_step = noise_amt;
 
-  noise_step = max(noise_step, 1);
-  println(noise_step);
+  //noise_step = max(noise_step, 1);
+  println(frameRate);
 }
 
 
@@ -125,10 +126,11 @@ void keyPressed() {
   if (key == 'q') qpressed = true;
   if (key == 'e') epressed = true;
   
-  //F1
-  if (keyCode == 112)
+  if (keyCode == 112) //F1
+    is_lowres = !is_lowres;
+  if (keyCode == 113) //F2
     reflections_enabled = !reflections_enabled;
-  if (keyCode == 113)
+  if (keyCode == 114) //F3
     occlusion_enabled = !occlusion_enabled;
 }
 
