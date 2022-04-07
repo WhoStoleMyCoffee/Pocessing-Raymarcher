@@ -1,9 +1,13 @@
 //http://jamie-wong.com/2016/07/15/ray-marching-signed-distance-functions/
+//pixels[y*pixel_size * xpx_count + x*pixel_size] = col;
 
 
 void calc_rays() {
   for (int x = 0; x < xpx_count; x += noise_step) {
+    if (x % pixel_size != 0) continue;
     for (int y = 0; y < ypx_count; y += noise_step) {
+      if (y % pixel_size != 0) continue;
+      
       PVector ray_dir = get_ray_direction(x, y, d);
       
       
@@ -16,6 +20,7 @@ void calc_rays() {
         screen_pixels[x][y] = ray_reflection(ray_dir, collision, max_ray_bounce).col;
       
       screen_pixels[x][y] = ray_occlusion(collision.pos, screen_pixels[x][y]);
+      //pixels[y * xpx_count + x] = ray_occlusion(collision.pos, screen_pixels[x][y]);
     }
   }
 }
@@ -36,13 +41,12 @@ CollisionData march_ray(PVector origin, PVector ray_dir, float max_dist) {
     Shape closest_shape = null;
     for (Shape shape : shapes) {
       float dist_to_shape = shape.get_SDF(ray_pos);
-      if (dist_to_shape < dist) {
-        dist = dist_to_shape;
-        closest_shape = shape;
-      }
+      if (dist_to_shape > dist) continue;
+      dist = dist_to_shape;
+      closest_shape = shape;
     }
     
-    if (dist < EPSILON) { //inside the surface
+    if (dist < ray_hit_dist) { //inside the surface
       coll.collider = closest_shape;
       coll.col = closest_shape.col;
       coll.pos = ray_pos;
@@ -81,6 +85,7 @@ CollisionData ray_reflection(PVector ray_dir, CollisionData coll, int N)
 
 
 
+// TODO soft shadows
 //  pos : the contact point on an object
 //  albedo : the original color of that object at that position
 color ray_occlusion(PVector pos, color albedo)
@@ -99,8 +104,9 @@ color ray_occlusion(PVector pos, color albedo)
     if (occlusion.collider != null) continue; //ray obstructed
     
     float dot = constrain( PVector.dot(estimate_normal(pos), dir_to_light), 0, 1 ); //angle
-    float mlt = constrain( map(dist_to_light, 0, light.r, light.energy, 0), 0, 1 ); //distance
-    c = add_color(c, light.col, dot * mlt);
+    float dist = constrain( map(dist_to_light, 0, light.r, light.energy, 0), 0, 1 ); //distance
+    
+    c = add_color(c, light.col, dot * dist);
   }
   return c;
 }

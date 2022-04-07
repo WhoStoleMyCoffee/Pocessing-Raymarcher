@@ -1,10 +1,11 @@
 // CONTROLS ----------------------------------------------------------------------------
 final float fov = HALF_PI;
-final int pixel_size = 2, noise_amt = 4;
+final int pixel_size = 1, noise_amt = 4;
 final float max_ray_dist = 50, max_marching_steps = 400;
 final float mouse_sens = 0.01, cam_spd = 2.0;
-final color sky_color = color(100);
+final color sky_color = color(81);
 final int max_ray_bounce = 3;
+final float ray_hit_dist = 0.0005; //at what distance to the scene will a ray be considered to have hit an object
 // -------------------------------------------------------------------------------------
 
 boolean reflections_enabled = true;
@@ -44,13 +45,13 @@ void setup() {
   //box
   Box b = new Box(1, -0.5, 5, 1, 1, 1);
   b.col = color(50);
-  b.metallic = 0.8;
+  b.metallic = 0.75;
   shapes.add( b );
 
   //sphere
   Sphere s = new Sphere(2, -0.5, 2.4, 1);
   s.col = color(220, 50, 0);
-  s.metallic = 0.8;
+  s.metallic = 0.75;
   shapes.add( s );
 
   //wireframe box
@@ -66,9 +67,9 @@ void setup() {
 
   //lights
   lights.add( new Light(0, -10, 0,  100, 0.7, color(255, 100, 0)) );
-  lights.add( new Light(5, -2,  3,  4,   0.5, color(27, 179, 247)) );
+  lights.add( new Light(5, -2,  3,  6,   0.5, color(27, 179, 247)) );
 
-  cam_pos = new PVector(0, 0, -2);
+  cam_pos = new PVector(0, 0, 0);
   cam_angle = new PVector();
   aspect_ratio = width / height;
 }
@@ -85,8 +86,10 @@ void draw() {
   
   background(sky_color);
 
+  loadPixels();
   calc_rays();
-  display_pixels();
+  updatePixels();
+  //display_pixels();
   
   noise_step -= 1;
 
