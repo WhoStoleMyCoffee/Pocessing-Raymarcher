@@ -1,17 +1,18 @@
 // CONTROLS ----------------------------------------------------------------------------
-float fov = HALF_PI;
-int pixel_size = 2, noise_amt = 4;
-float max_ray_dist = 40, max_marching_steps = 300;
-float mouse_sens = 0.01, cam_spd = 1.5;
-boolean reflections_enabled = true;
-boolean occlusion_enabled = true;
+final float fov = HALF_PI;
+final int pixel_size = 2, noise_amt = 4;
+final float max_ray_dist = 50, max_marching_steps = 400;
+final float mouse_sens = 0.01, cam_spd = 2.0;
+final color sky_color = color(100);
+final int max_ray_bounce = 3;
 // -------------------------------------------------------------------------------------
 
-float d = 1 / tan(fov / 2);
+boolean reflections_enabled = true;
+boolean occlusion_enabled = true;
+
+final float d = 1 / tan(fov / 2);
 PVector cam_pos;
 PVector cam_angle;
-
-color sky_color = color(100);
 
 ArrayList<Shape> shapes;
 ArrayList<Light> lights;
@@ -19,9 +20,8 @@ int xpx_count, ypx_count;
 int noise_step = noise_amt;
 color[][] screen_pixels;
 float aspect_ratio;
-int time = 0;
 float delta = 0, prev_time = 0;
-boolean cam_control = false;
+boolean cam_control = false; //whether the user can control the camera
 
 boolean wpressed = false;
 boolean spressed = false;
@@ -42,12 +42,14 @@ void setup() {
   lights = new ArrayList<Light>();
 
   //box
-  Box b = new Box(0, -0.5, 5, 1, 1, 1);
+  Box b = new Box(1, -0.5, 5, 1, 1, 1);
+  b.col = color(50);
   b.metallic = 0.8;
   shapes.add( b );
 
   //sphere
-  Sphere s = new Sphere(2, -0.5, 2, 1);
+  Sphere s = new Sphere(2, -0.5, 2.4, 1);
+  s.col = color(220, 50, 0);
   s.metallic = 0.8;
   shapes.add( s );
 
@@ -85,11 +87,7 @@ void draw() {
 
   calc_rays();
   display_pixels();
-
-  //println(frameRate);
-
-  //time++;
-
+  
   noise_step -= 1;
 
   //moving cam
@@ -130,10 +128,10 @@ void keyPressed() {
   if (key == 'e') epressed = true;
   
   //F1
-  if (keyCode == 112) {
+  if (keyCode == 112)
     reflections_enabled = !reflections_enabled;
+  if (keyCode == 113)
     occlusion_enabled = !occlusion_enabled;
-  }
 }
 
 void keyReleased() {
@@ -159,15 +157,4 @@ void display_pixels() {
       square(x*pixel_size, y*pixel_size, pixel_size * noise_step);
     }
   }
-}
-
-
-
-PVector dir_to(PVector a, PVector b) {
-  return PVector.sub(b, a).normalize();
-}
-
-
-PVector rotY(PVector vec, float a) {
-  return new PVector(vec.x * cos(a) + vec.z * sin(a), vec.y, -vec.x * sin(a) + vec.z * cos(a));
 }

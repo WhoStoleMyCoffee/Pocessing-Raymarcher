@@ -2,7 +2,7 @@ class CollisionData {
   Shape collider = null;
   PVector pos = null;
   float dist;
-  color col;
+  color col; //TODO remove collisiondata.col bc we dont need it?
 }
 
 

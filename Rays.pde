@@ -6,39 +6,25 @@ void calc_rays() {
     for (int y = 0; y < ypx_count; y += noise_step) {
       PVector ray_dir = get_ray_direction(x, y, d);
       
-      CollisionData collision = calc_ray(cam_pos, ray_dir, max_ray_dist);
       
-      //set the albedo
+      CollisionData collision = march_ray(cam_pos, ray_dir, max_ray_dist);
       screen_pixels[x][y] = collision.col;
       
-      //if we didn't hit anything, continue
-      if (collision.pos == null) continue;
+      if (collision.collider == null)  continue;
       
-      //REFLECTION -----------------------------------------------------------
-      if (collision.collider.metallic > 0 && reflections_enabled) {
-        CollisionData reflection = ray_reflection(x, y, collision, ray_dir);
-        
-        //calclate the reflected object's light too
-        if (reflection.pos != null && occlusion_enabled) {
-          float effect = collision.collider.metallic;
-          ray_occlusion(x, y, reflection, reflection.col, effect);
-        }
-      }
+      if (reflections_enabled && collision.collider.metallic > 0)
+        screen_pixels[x][y] = ray_reflection(ray_dir, collision, max_ray_bounce).col;
       
-      //OCCLUSION ------------------------------------------------------------
-      if (occlusion_enabled)
-        ray_occlusion(x, y, collision, screen_pixels[x][y], 1);
-   
-      
-      
+      screen_pixels[x][y] = ray_occlusion(collision.pos, screen_pixels[x][y]);
     }
   }
 }
 
 
 
-//CALC RAY -------------------------------------------------------------------------------------------------- 
-CollisionData calc_ray(PVector origin, PVector ray_dir, float max_dist) {
+
+
+CollisionData march_ray(PVector origin, PVector ray_dir, float max_dist) {
   CollisionData coll = new CollisionData();
   coll.dist = 0.1;
   
@@ -85,49 +71,47 @@ CollisionData calc_ray(PVector origin, PVector ray_dir, float max_dist) {
 
 
 
-CollisionData ray_reflection(int px, int py, CollisionData coll, PVector ray_dir) {
-    //get reflection vector
-    PVector Pc = coll.pos;
-    //PVector reflect_dir = get_ray_reflection_vec(ray_dir, estimate_normal(Pc) );
-    ray_dir.set ( get_ray_reflection_vec(ray_dir, estimate_normal(Pc)) );
-    
-    //calculate reflection
-    CollisionData reflection = calc_ray(Pc, ray_dir, max_ray_dist/2);
-    reflection.col = mix_color(screen_pixels[px][py], reflection.col, coll.collider.metallic * coll.collider.metallic);
-    
-    //mix the colors
-    screen_pixels[px][py] = reflection.col;
-    
-    return reflection;
-}
-
-
-
-void ray_occlusion(int px, int py, CollisionData coll, color albedo, float light_effect) {
-  color occ_color = albedo; //albedo
+//  ray_dir : the incoming ray's direction
+CollisionData ray_reflection(PVector ray_dir, CollisionData coll, int N)
+{
+  PVector reflect_vec = vec_reflect(ray_dir, estimate_normal(coll.pos));
   
-  for (Light light : lights) {
-    float dist_to_light = PVector.dist(coll.pos, light.pos);
-    PVector dir_to_light = dir_to(coll.pos, light.pos);
-    
-    if (dist_to_light > light.energy) continue; //too far away
-    
-    CollisionData occlusion;
-    occlusion = calc_ray(coll.pos, dir_to_light, dist_to_light);
-    
-    if (occlusion.pos == null) { //if light is not obstructed
-      
-      float dot = constrain( PVector.dot( estimate_normal(coll.pos) , dir_to_light), 0, 1 ); //angle
-      float mlt = constrain( map(dist_to_light, 0, light.energy, 1, 0), 0, 1 ); //distance
-      
-      occ_color = add_color(occ_color, light.col, dot * mlt * light_effect);
-      
-    }
-    
+  CollisionData reflection = march_ray(coll.pos, reflect_vec, max_ray_dist * 0.5);
+  
+  if (reflection.collider != null) {
+    reflection.col = ray_occlusion(reflection.pos, reflection.col); //apply occlusion
+    if (N > 1)  reflection.col = ray_reflection(reflect_vec, reflection, N-1).col; //recursively calculate reflections
   }
-  screen_pixels[px][py] = occ_color;
+  
+  reflection.col = mix_color(coll.col, reflection.col, pow(coll.collider.metallic, 2));
+  return reflection;
 }
 
+
+
+//  pos : the contact point on an object
+//  albedo : the original color of that object at that position
+color ray_occlusion(PVector pos, color albedo)
+{
+  if (!occlusion_enabled) return albedo;
+  color c = albedo;
+  
+  for (Light light : lights)
+  {
+    float dist_to_light = PVector.dist(pos, light.pos);
+    PVector dir_to_light = dir_to(pos, light.pos);
+    
+    if (dist_to_light > light.energy) continue; //too far away, skip
+    
+    CollisionData occlusion = march_ray(pos, dir_to_light, dist_to_light);
+    if (occlusion.collider != null) continue; //ray obstructed
+    
+    float dot = constrain( PVector.dot(estimate_normal(pos), dir_to_light), 0, 1 ); //angle
+    float mlt = constrain( map(dist_to_light, 0, light.energy, 1, 0), 0, 1 ); //distance
+    c = add_color(c, light.col, dot * mlt);
+  }
+  return c;
+}
 
 
 float sceneSDF(float px, float py, float pz) {
@@ -147,39 +131,4 @@ PVector get_ray_direction(int pixel_x, int pixel_y, float d) {
     (2 * (pixel_y + 0.5) / ypx_count) - 1,
     d).normalize();
   return rotY(v, cam_angle.y);
-}
-
-
-
-PVector get_ray_reflection_vec(PVector dir, PVector normal) {
-  return PVector.sub( dir, PVector.mult( normal, PVector.dot(dir,normal)*2 ) );
-}
-
-
-PVector estimate_normal(PVector p) {
-  return new PVector(
-    sceneSDF(p.x + EPSILON, p.y, p.z) - sceneSDF(p.x - EPSILON, p.y, p.z),
-    sceneSDF(p.x, p.y + EPSILON, p.z) - sceneSDF(p.x, p.y - EPSILON, p.z),
-    sceneSDF(p.x, p.y, p.z + EPSILON) - sceneSDF(p.x, p.y, p.z - EPSILON)
-  ).normalize();
-}
-
-
-
-//COLOR --------------------------------------------------------------------------------------------------
-color add_color(color a, color b, float amt) {
-  return color(
-    red(a) + red(b)*amt,
-    green(a) + green(b)*amt,
-    blue(a) + blue(b)*amt
-  );
-}
-
-
-color mix_color(color a, color b, float amt) {
-  return color(
-    red(a) + (red(b) - red(a))*amt,
-    green(a) + (green(b) - green(a))*amt,
-    blue(a) + (blue(b) - blue(a))*amt
-  );
 }
