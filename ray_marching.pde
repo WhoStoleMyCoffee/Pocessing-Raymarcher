@@ -52,9 +52,10 @@ void setup() {
   shapes.add( s );
 
   //wireframe box
-  Box box = new Box(-8, -1.5, 4, 2, 2, 2);
-  Shape wfs = new Sphere(-8, -1.5, 4, 2.5);
-  ShapeDiff df = new ShapeDiff(box, wfs);
+  ShapeDiff df = new ShapeDiff(
+    new Box(-8, -1.5, 4, 2, 2, 2), 
+    new Sphere(-8, -1.5, 4, 2.5)
+  );
   df.col = color(38, 123, 76);
   shapes.add(df);
 
@@ -62,8 +63,8 @@ void setup() {
   shapes.add( new Plane(0, 1, 0, new PVector(0, -1, 0), color(110), 0.0) ); //ground
 
   //lights
-  lights.add( new Light(-5, -2, 4, 10, color(255, 100, 0)) );
-  lights.add( new Light(5, -2, 3, 6, color(27, 179, 247)) );
+  lights.add( new Light(0, -10, 0, 100, color(255, 100, 0)) );
+  lights.add( new Light(5, -2, 3,  4, color(27, 179, 247)) );
 
   cam_pos = new PVector(0, 0, -2);
   cam_angle = new PVector();
