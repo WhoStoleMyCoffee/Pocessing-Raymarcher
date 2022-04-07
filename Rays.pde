@@ -2,8 +2,6 @@
 
 
 void calc_rays() {
-  float d = 1 / tan(fov / 2);
-  
   for (int x = 0; x < xpx_count; x += noise_step) {
     for (int y = 0; y < ypx_count; y += noise_step) {
       PVector ray_dir = get_ray_direction(x, y, d);

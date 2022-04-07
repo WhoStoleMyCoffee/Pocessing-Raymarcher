@@ -7,11 +7,11 @@ boolean reflections_enabled = true;
 boolean occlusion_enabled = true;
 // -------------------------------------------------------------------------------------
 
+float d = 1 / tan(fov / 2);
 PVector cam_pos;
 PVector cam_angle;
-float exposure = 1;
 
-color sky_color = color(51, 51, 55);
+color sky_color = color(100);
 
 ArrayList<Shape> shapes;
 ArrayList<Light> lights;
@@ -83,7 +83,6 @@ void draw() {
   background(sky_color);
 
   calc_rays();
-  effect_exposure();
   display_pixels();
 
   //println(frameRate);
@@ -128,11 +127,12 @@ void keyPressed() {
   if (key == 'd') dpressed = true;
   if (key == 'q') qpressed = true;
   if (key == 'e') epressed = true;
-
-  //if (key == 'o') fov -= 0.05;
-  //if (key == 'p') fov += 0.05;
-  if (key == 'o') exposure -= 0.05;
-  if (key == 'p') exposure += 0.05;
+  
+  //F1
+  if (keyCode == 112) {
+    reflections_enabled = !reflections_enabled;
+    occlusion_enabled = !occlusion_enabled;
+  }
 }
 
 void keyReleased() {
@@ -156,38 +156,6 @@ void display_pixels() {
     for (int y = 0; y < ypx_count; y += noise_step) {
       fill(screen_pixels[x][y]);
       square(x*pixel_size, y*pixel_size, pixel_size * noise_step);
-    }
-  }
-}
-
-
-void effect_exposure() {
-  colorMode(RGB, 1, 1, 1);
-  
-  //get screen light
-  float screen_light = 0, max_screen_light = 0;
-  for (int x = 0; x < xpx_count; x += noise_step) {
-    for (int y = 0; y < ypx_count; y += noise_step) {
-      color c = screen_pixels[x][y];
-      float v = ( red(c) + green(c) + blue(c) ) / 3;
-      screen_light += v;
-      max_screen_light += 1;
-    }
-  }
-  
-  //change exposure
-  float target = map(screen_light, 0, max_screen_light, 0.5, 1.5);
-  exposure += (target - exposure) * 0.05;
-
-  //effect exposure
-  for (int x = 0; x < xpx_count; x += noise_step) {
-    for (int y = 0; y < ypx_count; y += noise_step) {
-      color c = screen_pixels[x][y];
-      float r = pow( red(c), exposure );
-      float g = pow ( green(c), exposure );
-      float b = pow ( blue(c), exposure );
-
-      screen_pixels[x][y] = color(r, g, b);
     }
   }
 }
