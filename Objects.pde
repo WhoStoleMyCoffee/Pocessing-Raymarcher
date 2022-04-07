@@ -2,7 +2,7 @@ class CollisionData {
   Shape collider = null;
   PVector pos = null;
   float dist;
-  color col; //TODO remove collisiondata.col bc we dont need it?
+  color col;
 }
 
 
@@ -127,10 +127,12 @@ class ShapeUnion extends Shape {
 
 class Light {
   PVector pos;
-  float energy = 10;
+  float r; //radius
+  float energy; //0 = none, 1 = full energy
   color col;
-  Light(float x, float y, float z, float _energy, color _col) {
+  Light(float x, float y, float z, float _radius, float _energy, color _col) {
     pos = new PVector(x, y, z);
+    r = _radius;
     energy = _energy;
     col = _col;
   }

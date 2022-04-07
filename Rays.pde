@@ -51,15 +51,7 @@ CollisionData march_ray(PVector origin, PVector ray_dir, float max_dist) {
     
     //move along the view ray
     coll.dist += dist;
-    
-    if (coll.dist >= max_dist) {
-      coll.collider = null;
-      coll.dist = max_ray_dist;
-      coll.col = sky_color;
-      coll.pos = null;
-      return coll;
-    }
-    
+    if (coll.dist >= max_dist)  break;
   }
   coll.collider = null;
   coll.dist = max_dist;
@@ -79,7 +71,7 @@ CollisionData ray_reflection(PVector ray_dir, CollisionData coll, int N)
   CollisionData reflection = march_ray(coll.pos, reflect_vec, max_ray_dist * 0.5);
   
   if (reflection.collider != null) {
-    reflection.col = ray_occlusion(reflection.pos, reflection.col); //apply occlusion
+    reflection.col = ray_occlusion(reflection.pos, reflection.col);
     if (N > 1)  reflection.col = ray_reflection(reflect_vec, reflection, N-1).col; //recursively calculate reflections
   }
   
@@ -99,15 +91,15 @@ color ray_occlusion(PVector pos, color albedo)
   for (Light light : lights)
   {
     float dist_to_light = PVector.dist(pos, light.pos);
-    PVector dir_to_light = dir_to(pos, light.pos);
+    if (dist_to_light > light.r) continue; //too far away, skip
     
-    if (dist_to_light > light.energy) continue; //too far away, skip
+    PVector dir_to_light = dir_to(pos, light.pos);
     
     CollisionData occlusion = march_ray(pos, dir_to_light, dist_to_light);
     if (occlusion.collider != null) continue; //ray obstructed
     
     float dot = constrain( PVector.dot(estimate_normal(pos), dir_to_light), 0, 1 ); //angle
-    float mlt = constrain( map(dist_to_light, 0, light.energy, 1, 0), 0, 1 ); //distance
+    float mlt = constrain( map(dist_to_light, 0, light.r, light.energy, 0), 0, 1 ); //distance
     c = add_color(c, light.col, dot * mlt);
   }
   return c;
@@ -126,9 +118,10 @@ float sceneSDF(float px, float py, float pz) {
 
 
 PVector get_ray_direction(int pixel_x, int pixel_y, float d) {
-  PVector v = new PVector(
-    aspect_ratio * (2 * (pixel_x + 0.5) / xpx_count) - 1,
-    (2 * (pixel_y + 0.5) / ypx_count) - 1,
-    d).normalize();
-  return rotY(v, cam_angle.y);
+  return rotY(
+    new PVector(
+      aspect_ratio * (2 * (pixel_x + 0.5) / xpx_count) - 1,
+      (2 * (pixel_y + 0.5) / ypx_count) - 1,
+      d).normalize(),
+    cam_angle.y);
 }
