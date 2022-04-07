@@ -3,24 +3,30 @@
 
 
 void calc_rays() {
-  for (int x = 0; x < xpx_count; x += noise_step) {
-    if (x % pixel_size != 0) continue;
-    for (int y = 0; y < ypx_count; y += noise_step) {
-      if (y % pixel_size != 0) continue;
+  for (int x = 0; x < width; x++) {
+    for (int y = 0; y < height; y++) {
+      
+      //noise
+      if (x % noise_step != 0 || y % noise_step != 0) {
+        pixels[y * width + x] = pixels[floor(y / noise_step)*noise_step * width + floor(x / noise_step)*noise_step];
+        continue;
+      }
+      
       
       PVector ray_dir = get_ray_direction(x, y, d);
       
-      
       CollisionData collision = march_ray(cam_pos, ray_dir, max_ray_dist);
-      screen_pixels[x][y] = collision.col;
+      color c = collision.col;
       
-      if (collision.collider == null)  continue;
+      if (collision.collider == null) {
+        pixels[y * width + x] = c;
+        continue;
+      }
       
       if (reflections_enabled && collision.collider.metallic > 0)
-        screen_pixels[x][y] = ray_reflection(ray_dir, collision, max_ray_bounce).col;
+        c = ray_reflection(ray_dir, collision, max_ray_bounce).col;
       
-      screen_pixels[x][y] = ray_occlusion(collision.pos, screen_pixels[x][y]);
-      //pixels[y * xpx_count + x] = ray_occlusion(collision.pos, screen_pixels[x][y]);
+      pixels[y * width + x] = ray_occlusion(collision.pos, c);
     }
   }
 }
@@ -126,8 +132,8 @@ float sceneSDF(float px, float py, float pz) {
 PVector get_ray_direction(int pixel_x, int pixel_y, float d) {
   return rotY(
     new PVector(
-      aspect_ratio * (2 * (pixel_x + 0.5) / xpx_count) - 1,
-      (2 * (pixel_y + 0.5) / ypx_count) - 1,
+      aspect_ratio * (2 * (pixel_x + 0.5) / width) - 1,
+      (2 * (pixel_y + 0.5) / height) - 1,
       d).normalize(),
     cam_angle.y);
 }

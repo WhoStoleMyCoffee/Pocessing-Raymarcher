@@ -1,6 +1,6 @@
 // CONTROLS ----------------------------------------------------------------------------
 final float fov = HALF_PI;
-final int pixel_size = 1, noise_amt = 4;
+final int noise_amt = 8;
 final float max_ray_dist = 50, max_marching_steps = 400;
 final float mouse_sens = 0.01, cam_spd = 2.0;
 final color sky_color = color(81);
@@ -17,9 +17,7 @@ PVector cam_angle;
 
 ArrayList<Shape> shapes;
 ArrayList<Light> lights;
-int xpx_count, ypx_count;
 int noise_step = noise_amt;
-color[][] screen_pixels;
 float aspect_ratio;
 float delta = 0, prev_time = 0;
 boolean cam_control = false; //whether the user can control the camera
@@ -34,10 +32,6 @@ boolean epressed = false;
 
 void setup() {
   size(800, 800);
-
-  xpx_count = floor(width / pixel_size);
-  ypx_count = floor(height / pixel_size);
-  screen_pixels = new color[xpx_count][ypx_count];
 
   shapes = new ArrayList<Shape>();
   lights = new ArrayList<Light>();
@@ -114,7 +108,8 @@ void draw() {
     noise_step = noise_amt;
   }
 
-  noise_step = max(noise_step, pixel_size);
+  noise_step = max(noise_step, 1);
+  println(noise_step);
 }
 
 
@@ -149,15 +144,4 @@ void keyReleased() {
 
 void mousePressed() {
   cam_control = !cam_control;
-}
-
-
-void display_pixels() {
-  noStroke();
-  for (int x = 0; x < xpx_count; x += noise_step) {
-    for (int y = 0; y < ypx_count; y += noise_step) {
-      fill(screen_pixels[x][y]);
-      square(x*pixel_size, y*pixel_size, pixel_size * noise_step);
-    }
-  }
 }
