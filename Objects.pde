@@ -13,6 +13,14 @@ class Shape {
   
   float get_SDF(PVector point) { return 0; }
   
+  Shape set_col(color c) {
+    this.col = c;
+    return this;
+  }
+  Shape set_metallic(float v) {
+    this.metallic = v;
+    return this;
+  }
 }
 
 
@@ -49,11 +57,9 @@ class Box extends Shape {
 class Plane extends Shape {
   PVector n;
   
-  Plane(float x, float y, float z, PVector normal, color _col, float _metallic) {
-    pos = new PVector(x, y, z);
+  Plane(float h, PVector normal) {
+    pos = new PVector(0, h, 0);
     n = normal;
-    col = _col;
-    metallic = _metallic;
   }
   
   float get_SDF(PVector point) {

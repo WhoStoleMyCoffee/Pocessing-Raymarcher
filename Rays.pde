@@ -1,5 +1,4 @@
 //http://jamie-wong.com/2016/07/15/ray-marching-signed-distance-functions/
-//pixels[y*pixel_size * xpx_count + x*pixel_size] = col;
 
 
 void calc_rays() {
@@ -66,7 +65,7 @@ CollisionData march_ray(PVector origin, PVector ray_dir, float max_dist) {
   }
   coll.collider = null;
   coll.dist = max_dist;
-  coll.col = sky_color;
+  coll.col = lerp_color(sky_col1, sky_col2, map(ray_dir.y, -1, 0, 0, 1));
   coll.pos = null;
   return coll;
 }
@@ -99,15 +98,26 @@ color ray_occlusion(PVector pos, color albedo)
   if (!occlusion_enabled) return albedo;
   color c = albedo;
 
+  //SUNLIGHT
+  {
+    float res = soft_shadow(pos, sun_dir, 999);
+    if (res != 0.0) {
+
+    float dot = constrain( PVector.dot(estimate_normal(pos), sun_dir), 0, 1 ); //angle
+
+      c = add_color(c, sunlight_col, dot * res * sun_energy); 
+    }
+  }
+  
+
+  //LIGHTS IN THE SCENE
   for (Light light : lights)
   {
     float dist_to_light = PVector.dist(pos, light.pos);
     if (dist_to_light > light.r) continue; //too far away, skip
 
     PVector dir_to_light = dir_to(pos, light.pos);
-
-    //CollisionData occlusion = march_ray(pos, dir_to_light, dist_to_light);
-    //if (occlusion.collider != null) continue; //ray obstructed
+    
     float res = soft_shadow(pos, dir_to_light, dist_to_light);
     if (res == 0.0) continue; //ray obstructed
 
@@ -115,7 +125,6 @@ color ray_occlusion(PVector pos, color albedo)
     float dist = constrain( map(dist_to_light, 0, light.r, light.energy, 0), 0, 1 ); //distance
 
     c = add_color(c, light.col, dot * dist * res);
-    //c = add_color(c, light.col, res);
   }
   return c;
 }
@@ -142,6 +151,8 @@ float soft_shadow(PVector origin, PVector ray_dir, float max_dist) {
   }
   return res;
 }
+
+
 
 
 float sceneSDF(float px, float py, float pz) {

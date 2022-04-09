@@ -40,3 +40,12 @@ color mix_color(color a, color b, float amt) {
     blue(a) + (blue(b) - blue(a))*amt
   );
 }
+
+
+color lerp_color(color a, color b, float amt) {
+  return color(
+    lerp(red(a), red(b), amt),
+    lerp(green(a), green(b), amt),
+    lerp(blue(a), blue(b), amt)
+  );
+}
