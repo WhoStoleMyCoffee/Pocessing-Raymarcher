@@ -1,3 +1,5 @@
+//https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
+
 class CollisionData {
   Shape collider = null;
   PVector pos = null;
@@ -32,8 +34,8 @@ class Sphere extends Shape {
     r = _r;
   }
   
-  float get_SDF(PVector point) {
-    return PVector.dist(point, pos) - r;
+  float get_SDF(PVector p) {
+    return p.mag() - r;
   }
   
 }
@@ -46,8 +48,7 @@ class Box extends Shape {
     bounds = new PVector(xs, ys, zs);
   }
   
-  float get_SDF(PVector point) {
-    PVector p = PVector.sub(point, pos);
+  float get_SDF(PVector p) {
     PVector q = PVector.sub(new PVector(abs(p.x), abs(p.y), abs(p.z)), bounds);
     return new PVector(max(q.x, 0), max(q.y, 0), max(q.z, 0)).mag() + min(max(q.x, max(q.y, q.z)), 0.0);
   }
@@ -57,31 +58,13 @@ class Box extends Shape {
 class Plane extends Shape {
   PVector n;
   
-  Plane(float h, PVector normal) {
-    pos = new PVector(0, h, 0);
+  Plane(float x, float y, float z, PVector normal) {
+    pos = new PVector(x, y, z);
     n = normal;
   }
   
-  float get_SDF(PVector point) {
-    return PVector.dot(point, n) + pos.y;
-  }
-}
-
-
-class TorusX extends Shape {
-  float size, thickness;
-  TorusX(float x, float y, float z, float _size, float _thickness) {
-    pos = new PVector(x, y, z);
-    size = _size;
-    thickness = _thickness;
-  }
-  
-  float get_SDF(PVector point) {
-    PVector p = PVector.sub(point, pos);
-    float l = new PVector(p.y, p.z).mag();
-    PVector q = new PVector(l - size, p.x);
-    
-    return q.mag() - thickness;
+  float get_SDF(PVector p) {
+    return PVector.dot(p, n) + pos.y;
   }
 }
 
@@ -90,41 +73,42 @@ class TorusX extends Shape {
 
 class ShapeIntersect extends Shape {
   Shape a, b;
-  ShapeIntersect(Shape _a, Shape _b) {
+  ShapeIntersect(float x, float y, float z, Shape _a, Shape _b) {
+    pos = new PVector(x, y, z);
     a = _a;
     b = _b;
   }
   
-  float get_SDF(PVector point) {
-    float da = a.get_SDF(point);
-    float db = b.get_SDF(point);
-    return max(da, db);
+  float get_SDF(PVector p) {
+    return max(a.get_SDF(p), b.get_SDF(p));
   }
 }
 
 
 class ShapeDiff extends Shape {
   Shape a, b;
-  ShapeDiff(Shape _a, Shape _b) {
+  ShapeDiff(float x, float y, float z, Shape _a, Shape _b) {
+    pos = new PVector(x, y, z);
     a = _a;
     b = _b;
   }
   
-  float get_SDF(PVector point) {
-    return max(a.get_SDF(point), -b.get_SDF(point));
+  float get_SDF(PVector p) {
+    return max(a.get_SDF(p), -b.get_SDF(p));
   }
 }
 
 
 class ShapeUnion extends Shape {
   Shape a, b;
-  ShapeUnion(Shape _a, Shape _b) {
+  ShapeUnion(float x, float y, float z, Shape _a, Shape _b) {
+    pos = new PVector(x, y, z);
     a = _a;
     b = _b;
   }
   
-  float get_SDF(PVector point) {
-    return min(a.get_SDF(point), b.get_SDF(point));
+  float get_SDF(PVector p) {
+    return min(a.get_SDF(p), b.get_SDF(p));
   }
 }
 

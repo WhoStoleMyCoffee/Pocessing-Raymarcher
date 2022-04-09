@@ -13,13 +13,17 @@ PVector estimate_normal(PVector p) {
 }
 
 
-PVector dir_to(PVector a, PVector b) {
-  return PVector.sub(b, a).normalize();
+PVector rotY(PVector v, float a) {
+  return new PVector(
+    v.x * cos(a) + v.z * sin(a),
+    v.y,
+    -v.x * sin(a) + v.z * cos(a));
 }
 
 
-PVector rotY(PVector vec, float a) {
-  return new PVector(vec.x * cos(a) + vec.z * sin(a), vec.y, -vec.x * sin(a) + vec.z * cos(a));
+PVector rotAxis(PVector v, PVector n, float a) {
+  //return v * cos(a) + (v.dot(n)*n*(1-cos(a)) + (n.cross(v)*sin(a));
+  return PVector.mult(v, cos(a)).add( PVector.mult(n, v.dot(n)).mult(1-cos(a)) ).add(n.cross(v).mult(sin(a)));
 }
 
 

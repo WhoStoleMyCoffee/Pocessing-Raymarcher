@@ -2,15 +2,14 @@
 
 
 void calc_rays() {
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
+  for (int x = 0; x < width; x++) {
+    for (int y = 0; y < height; y++) {
 
       //noise
       if (x % noise_step != 0 || y % noise_step != 0) {
         pixels[y * width + x] = pixels[floor(y / noise_step)*noise_step * width + floor(x / noise_step)*noise_step];
         continue;
       }
-
 
       PVector ray_dir = get_ray_direction(x, y, d);
 
@@ -36,19 +35,21 @@ void calc_rays() {
 
 CollisionData march_ray(PVector origin, PVector ray_dir, float max_dist) {
   CollisionData coll = new CollisionData();
-  coll.dist = 0.1;
+  coll.dist = 0.05;
 
-  for (int i = 0; i < max_marching_steps; i++) {
+  while (coll.dist < max_dist) {
     PVector ray_pos = PVector.add(origin, PVector.mult(ray_dir, coll.dist));
 
-    //get smallest distance
+    //GET SCENE DISTANCE
     float dist = max_dist;
     Shape closest_shape = null;
-    for (Shape shape : shapes) {
-      float dist_to_shape = shape.get_SDF(ray_pos);
+    for (Shape shape : shapes)
+    {
+      float dist_to_shape = shape.get_SDF(  PVector.sub(ray_pos, shape.pos)  );
       if (dist_to_shape > dist) continue;
       dist = dist_to_shape;
       closest_shape = shape;
+      
     }
 
     if (dist < ray_hit_dist) { //inside the surface
@@ -58,10 +59,8 @@ CollisionData march_ray(PVector origin, PVector ray_dir, float max_dist) {
       return coll;
     }
 
-
     //move along the view ray
     coll.dist += dist;
-    if (coll.dist >= max_dist)  break;
   }
   coll.collider = null;
   coll.dist = max_dist;
@@ -103,12 +102,12 @@ color ray_occlusion(PVector pos, color albedo)
     float res = soft_shadow(pos, sun_dir, 999);
     if (res != 0.0) {
 
-    float dot = constrain( PVector.dot(estimate_normal(pos), sun_dir), 0, 1 ); //angle
+      float dot = constrain( PVector.dot(estimate_normal(pos), sun_dir), 0, 1 ); //angle
 
-      c = add_color(c, sunlight_col, dot * res * sun_energy); 
+      c = add_color(c, sunlight_col, dot * res * sun_energy);
     }
   }
-  
+
 
   //LIGHTS IN THE SCENE
   for (Light light : lights)
@@ -116,15 +115,15 @@ color ray_occlusion(PVector pos, color albedo)
     float dist_to_light = PVector.dist(pos, light.pos);
     if (dist_to_light > light.r) continue; //too far away, skip
 
-    PVector dir_to_light = dir_to(pos, light.pos);
-    
+    PVector dir_to_light = PVector.sub(light.pos, pos).normalize();
+
     float res = soft_shadow(pos, dir_to_light, dist_to_light);
     if (res == 0.0) continue; //ray obstructed
 
-    float dot = constrain( PVector.dot(estimate_normal(pos), dir_to_light), 0, 1 ); //angle
-    float dist = constrain( map(dist_to_light, 0, light.r, light.energy, 0), 0, 1 ); //distance
-
-    c = add_color(c, light.col, dot * dist * res);
+    c = add_color(c, light.col,
+      constrain( PVector.dot(estimate_normal(pos), dir_to_light), 0, 1 ) //angle
+      * constrain( map(dist_to_light, 0, light.r, light.energy, 0), 0, 1 ) //distance
+      * res);
   }
   return c;
 }
@@ -133,10 +132,10 @@ color ray_occlusion(PVector pos, color albedo)
 
 //https://www.iquilezles.org/www/articles/rmshadows/rmshadows.htm
 float soft_shadow(PVector origin, PVector ray_dir, float max_dist) {
-  float t = 0.1;
+  float t = 0.05;
   float res = 1.0;
 
-  for (int i = 0; i < max_marching_steps; i++) {
+  while (t < max_dist) {
     PVector rp = PVector.add(origin, PVector.mult(ray_dir, t));
 
     float h = sceneSDF(rp.x, rp.y, rp.z);
@@ -147,7 +146,6 @@ float soft_shadow(PVector origin, PVector ray_dir, float max_dist) {
     //move along the view ray
     res = min(res, shadows_k * h/t);
     t += h;
-    if (t >= max_dist)  break;
   }
   return res;
 }
@@ -155,22 +153,23 @@ float soft_shadow(PVector origin, PVector ray_dir, float max_dist) {
 
 
 
-float sceneSDF(float px, float py, float pz) {
+float sceneSDF(float px, float py, float pz)
+{
   float dist = max_ray_dist;
   PVector point = new PVector(px, py, pz);
 
   for (Shape shape : shapes)
-    dist = min(shape.get_SDF(point), dist);
+    dist = min(shape.get_SDF(PVector.sub(point, shape.pos)), dist);
 
   return dist;
 }
 
 
 PVector get_ray_direction(int pixel_x, int pixel_y, float d) {
-  return rotY(
-    new PVector(
-    aspect_ratio * (2 * (pixel_x + 0.5) / width) - 1,
-    (2 * (pixel_y + 0.5) / height) - 1,
-    d).normalize(),
-    cam_angle.y);
+  return rotAxis(
+      rotY(new PVector(aspect_ratio * (2 * (pixel_x + 0.5) / width) - 1,
+                       (2 * (pixel_y + 0.5) / height) - 1,
+                       d).normalize(),
+      cam_angle.y),
+    local_x, cam_angle.x);
 }

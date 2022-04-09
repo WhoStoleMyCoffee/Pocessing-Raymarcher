@@ -1,26 +1,31 @@
+//https://www.youtube.com/watch?v=Ne3RNhEVSIE&t=132s
+
+
 // CONTROLS ----------------------------------------------------------------------------
 final float fov = HALF_PI;
-final int noise_amt = 8;
-final float max_ray_dist = 50, max_marching_steps = 400;
+final int noise_amt = 10;
+final float max_ray_dist = 50;
 final float mouse_sens = 0.01, cam_spd = 4.0;
 final int max_ray_bounce = 4;
-final float ray_hit_dist = 0.0004; //at what distance to the scene will a ray be considered to have hit an object
+final float ray_hit_dist = 0.004; //at what distance to the scene will a ray be considered to have hit an object
 final float shadows_k = 8;
 
 final color sky_col1 = color(64, 185, 277);
 final color sky_col2 = color(166, 233, 245);
 final color sunlight_col = color(254, 255, 224);
 final float sun_energy = 0.5;
-PVector sun_dir = new PVector(0.2, -1, 0.1).normalize(); //Must be normalized
+PVector sun_dir = new PVector(-0.2, -1, 0.1).normalize(); //Must be normalized
 // -------------------------------------------------------------------------------------
 
 boolean reflections_enabled = true;
 boolean occlusion_enabled = true;
-boolean is_lowres = true;
+boolean is_rendering = false;
 
+final PVector AXIS_X = new PVector(1, 0, 0);
 final float d = 1 / tan(fov / 2);
 PVector cam_pos;
 PVector cam_angle;
+PVector local_x = new PVector(1, 0, 0); //local x axis (transform.basis.x)
 
 ArrayList<Shape> shapes;
 ArrayList<Light> lights;
@@ -56,19 +61,16 @@ void setup() {
   );
 
   //wireframe box
-  shapes.add(new ShapeDiff(
-      new Box(-5, -1, 4,  2, 2, 2), 
-      new Sphere(-5, -1, 4,  2.5)
+  shapes.add(new ShapeDiff( -5, -1, 4,
+      new Box(0, 0, 0,  2, 2, 2), 
+      new Sphere(0, 0, 0,  2.5)
     ).set_col(color(38, 123, 76))
   );
 
   //ground
-  shapes.add( new Plane(1, new PVector(0, -1, 0))
-    .set_col(color(110)));
-  
-  //other box
-  //shapes.add( new Box(5, -4, 3, 4, 1, 4)
-  //  .set_col(color(51)) );
+  shapes.add( new Plane(0, 0.5, 0, new PVector(0, -1, 0))
+    .set_col(color(110))
+  );
   
 
   //lights
@@ -110,16 +112,21 @@ void draw() {
 
   // CAMERA ROTATION -----------------------------------------------------------------
   if (cam_control) {
-    float dy = mouseX - pmouseX;
-    cam_angle.y += dy * mouse_sens;
+    float dx = mouseX - pmouseX;
+    float dy = mouseY - pmouseY;
+    cam_angle.y += dx * mouse_sens;
+    cam_angle.x -= dy * mouse_sens;
+    
+    local_x = rotY(AXIS_X, cam_angle.y);
+    
     noise_step = noise_amt;
   }
   
-  if (is_lowres)
+  if (!is_rendering)
     noise_step = noise_amt;
 
-  //noise_step = max(noise_step, 1);
-  println(frameRate);
+
+  surface.setTitle("Ray Marcher " + str(floor(frameRate)) + "fps");
 }
 
 
@@ -136,7 +143,7 @@ void keyPressed() {
   if (key == 'e') epressed = true;
   
   if (keyCode == 112) //F1
-    is_lowres = !is_lowres;
+    is_rendering = !is_rendering;
   if (keyCode == 113) //F2
     reflections_enabled = !reflections_enabled;
   if (keyCode == 114) //F3
