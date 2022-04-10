@@ -166,10 +166,10 @@ float sceneSDF(float px, float py, float pz)
 
 
 PVector get_ray_direction(int pixel_x, int pixel_y, float d) {
-  return rotAxis(
-      rotY(new PVector(aspect_ratio * (2 * (pixel_x + 0.5) / width) - 1,
-                       (2 * (pixel_y + 0.5) / height) - 1,
-                       d).normalize(),
-      cam_angle.y),
-    local_x, cam_angle.x);
+  PVector v = new PVector(
+    aspect_ratio * (2 * (pixel_x + 0.5) / width) - 1,
+    (2 * (pixel_y + 0.5) / height) - 1,
+    d).normalize();
+  
+  return rotation_q.mult(v);
 }

@@ -22,10 +22,11 @@ boolean occlusion_enabled = true;
 boolean is_rendering = false;
 
 final PVector AXIS_X = new PVector(1, 0, 0);
+final PVector AXIS_Y = new PVector(0, 1, 0);
 final float d = 1 / tan(fov / 2);
 PVector cam_pos;
 PVector cam_angle;
-PVector local_x = new PVector(1, 0, 0); //local x axis (transform.basis.x)
+Quat rotation_q;
 
 ArrayList<Shape> shapes;
 ArrayList<Light> lights;
@@ -79,6 +80,8 @@ void setup() {
   cam_pos = new PVector(0, 0, 0);
   cam_angle = new PVector();
   aspect_ratio = width / height;
+  
+  rotation_q = new Quat(AXIS_Y, cam_angle.y);
 }
 
 
@@ -110,14 +113,13 @@ void draw() {
   cam_vel = cam_vel.mult(cam_spd * delta);
   cam_pos.add(rotY(cam_vel, cam_angle.y));
 
-  // CAMERA ROTATION -----------------------------------------------------------------
+  // CAMERA ROTATION -----------------------------------------------------------------------------------------------------------
   if (cam_control) {
-    float dx = mouseX - pmouseX;
-    float dy = mouseY - pmouseY;
-    cam_angle.y += dx * mouse_sens;
-    cam_angle.x -= dy * mouse_sens;
+    cam_angle.y += (mouseX - pmouseX) * mouse_sens;
+    cam_angle.x -= (mouseY - pmouseY) * mouse_sens;
     
-    local_x = rotY(AXIS_X, cam_angle.y);
+    rotation_q.from_axis_angle(AXIS_Y, cam_angle.y);
+    rotation_q.mult( new Quat(AXIS_X, cam_angle.x) );
     
     noise_step = noise_amt;
   }
