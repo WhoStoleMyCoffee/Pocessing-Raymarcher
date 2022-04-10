@@ -6,7 +6,7 @@ final float fov = HALF_PI;
 final int noise_amt = 10;
 final float max_ray_dist = 50;
 final float mouse_sens = 0.01, cam_spd = 4.0;
-final int max_ray_bounce = 4;
+final int max_ray_bounce = 3;
 final float ray_hit_dist = 0.004; //at what distance to the scene will a ray be considered to have hit an object
 final float shadows_k = 8;
 
@@ -23,6 +23,7 @@ boolean is_rendering = false;
 
 final PVector AXIS_X = new PVector(1, 0, 0);
 final PVector AXIS_Y = new PVector(0, 1, 0);
+final PVector AXIS_Z = new PVector(0, 0, 1);
 final float d = 1 / tan(fov / 2);
 PVector cam_pos;
 PVector cam_angle;
@@ -53,6 +54,7 @@ void setup() {
   shapes.add( new Box(1, -0.5, 5, 1, 1, 1)
     .set_col(color(50))
     .set_metallic(0.7)
+    .set_rot(0, 1, 0)
   );
 
   //sphere
@@ -70,9 +72,13 @@ void setup() {
 
   //ground
   shapes.add( new Plane(0, 0.5, 0, new PVector(0, -1, 0))
-    .set_col(color(110))
+    .set_col(color(82, 113, 89))
   );
   
+  //roof thing
+  shapes.add( new Box(3, -5, 6, 4, 0.1, 4)
+    .set_rot(0, 0, -0.5)
+  );
 
   //lights
   //lights.add( new Light(5, -2,  3,   6,   0.5, color(27, 179, 247)) );
@@ -118,8 +124,10 @@ void draw() {
     cam_angle.y += (mouseX - pmouseX) * mouse_sens;
     cam_angle.x -= (mouseY - pmouseY) * mouse_sens;
     
-    rotation_q.from_axis_angle(AXIS_Y, cam_angle.y);
-    rotation_q.mult( new Quat(AXIS_X, cam_angle.x) );
+    //Update rotation quaternion
+    //qy * qx
+    //rotation_q = new Quat(AXIS_Y, cam_angle.y).mult( new Quat(AXIS_X, cam_angle.x));
+    rotation_q = new Quat(cam_angle);
     
     noise_step = noise_amt;
   }
@@ -143,6 +151,9 @@ void keyPressed() {
   if (key == 'd') dpressed = true;
   if (key == 'q') qpressed = true;
   if (key == 'e') epressed = true;
+  
+  if (key == 'o') cam_angle.z -= 0.04;
+  if (key == 'p') cam_angle.z += 0.04;
   
   if (keyCode == 112) //F1
     is_rendering = !is_rendering;

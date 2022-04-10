@@ -12,6 +12,7 @@ class Shape {
   PVector pos;
   color col = color(0);
   float metallic = 0;
+  Quat rot = new Quat();
   
   float get_SDF(PVector point) { return 0; }
   
@@ -21,6 +22,10 @@ class Shape {
   }
   Shape set_metallic(float v) {
     this.metallic = v;
+    return this;
+  }
+  Shape set_rot(float rotx, float roty, float rotz) {
+    rot = new Quat(rotx, roty, rotz);
     return this;
   }
 }
@@ -48,7 +53,10 @@ class Box extends Shape {
     bounds = new PVector(xs, ys, zs);
   }
   
+  //float get_SDF(PVector pos) {
+  //  PVector p = new PVector(pos.x % 5 - 2.5, pos.y % 5 - 2.5, pos.z % 5 - 2.5);
   float get_SDF(PVector p) {
+    
     PVector q = PVector.sub(new PVector(abs(p.x), abs(p.y), abs(p.z)), bounds);
     return new PVector(max(q.x, 0), max(q.y, 0), max(q.z, 0)).mag() + min(max(q.x, max(q.y, q.z)), 0.0);
   }
@@ -80,11 +88,12 @@ class ShapeIntersect extends Shape {
   }
   
   float get_SDF(PVector p) {
-    return max(a.get_SDF(p), b.get_SDF(p));
+    return max(a.get_SDF(PVector.sub(p, a.pos)), b.get_SDF(PVector.sub(p, b.pos)));
   }
 }
 
 
+//subtract b from a
 class ShapeDiff extends Shape {
   Shape a, b;
   ShapeDiff(float x, float y, float z, Shape _a, Shape _b) {
@@ -94,7 +103,7 @@ class ShapeDiff extends Shape {
   }
   
   float get_SDF(PVector p) {
-    return max(a.get_SDF(p), -b.get_SDF(p));
+    return max(a.get_SDF(PVector.sub(p, a.pos)), -b.get_SDF(PVector.sub(p, b.pos)));
   }
 }
 
@@ -108,7 +117,7 @@ class ShapeUnion extends Shape {
   }
   
   float get_SDF(PVector p) {
-    return min(a.get_SDF(p), b.get_SDF(p));
+    return min(a.get_SDF(PVector.sub(p, a.pos)), b.get_SDF(PVector.sub(p, b.pos)));
   }
 }
 

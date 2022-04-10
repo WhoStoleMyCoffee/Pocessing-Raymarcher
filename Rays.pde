@@ -45,7 +45,7 @@ CollisionData march_ray(PVector origin, PVector ray_dir, float max_dist) {
     Shape closest_shape = null;
     for (Shape shape : shapes)
     {
-      float dist_to_shape = shape.get_SDF(  PVector.sub(ray_pos, shape.pos)  );
+      float dist_to_shape = shape.get_SDF(  shape.rot.mult(PVector.sub(ray_pos, shape.pos))  );
       if (dist_to_shape > dist) continue;
       dist = dist_to_shape;
       closest_shape = shape;
@@ -159,7 +159,7 @@ float sceneSDF(float px, float py, float pz)
   PVector point = new PVector(px, py, pz);
 
   for (Shape shape : shapes)
-    dist = min(shape.get_SDF(PVector.sub(point, shape.pos)), dist);
+    dist = min(shape.get_SDF(shape.rot.mult(PVector.sub(point, shape.pos))), dist);
 
   return dist;
 }
