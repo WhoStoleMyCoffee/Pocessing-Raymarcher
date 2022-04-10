@@ -11,7 +11,7 @@ void calc_rays() {
         continue;
       }
 
-      PVector ray_dir = get_ray_direction(x, y, d);
+      PVector ray_dir = get_ray_direction(x, height - y, d);
 
       CollisionData collision = march_ray(cam_pos, ray_dir, max_ray_dist);
       color c = collision.col;
@@ -35,7 +35,7 @@ void calc_rays() {
 
 CollisionData march_ray(PVector origin, PVector ray_dir, float max_dist) {
   CollisionData coll = new CollisionData();
-  coll.dist = 0.05;
+  coll.dist = init_ray_step;
 
   while (coll.dist < max_dist) {
     PVector ray_pos = PVector.add(origin, PVector.mult(ray_dir, coll.dist));
@@ -132,7 +132,7 @@ color ray_occlusion(PVector pos, color albedo)
 
 //https://www.iquilezles.org/www/articles/rmshadows/rmshadows.htm
 float soft_shadow(PVector origin, PVector ray_dir, float max_dist) {
-  float t = 0.05;
+  float t = init_ray_step;
   float res = 1.0;
 
   while (t < max_dist) {

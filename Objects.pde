@@ -72,7 +72,7 @@ class Plane extends Shape {
   }
   
   float get_SDF(PVector p) {
-    return PVector.dot(p, n) + pos.y;
+    return PVector.dot(p, n) - pos.y;
   }
 }
 
