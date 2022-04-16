@@ -6,9 +6,9 @@ PVector vec_reflect(PVector dir, PVector normal) {
 
 PVector estimate_normal(PVector p) {
   return new PVector(
-    sceneSDF(p.x + EPSILON, p.y, p.z) - sceneSDF(p.x - EPSILON, p.y, p.z),
-    sceneSDF(p.x, p.y + EPSILON, p.z) - sceneSDF(p.x, p.y - EPSILON, p.z),
-    sceneSDF(p.x, p.y, p.z + EPSILON) - sceneSDF(p.x, p.y, p.z - EPSILON)
+    sceneSDF(p.x + init_ray_step, p.y, p.z) - sceneSDF(p.x - init_ray_step, p.y, p.z),
+    sceneSDF(p.x, p.y + init_ray_step, p.z) - sceneSDF(p.x, p.y - init_ray_step, p.z),
+    sceneSDF(p.x, p.y, p.z + init_ray_step) - sceneSDF(p.x, p.y, p.z - init_ray_step)
   ).normalize();
 }
 
@@ -42,30 +42,13 @@ void set_sky(color col1, color col2, color sun_col, float energy, PVector dir) {
 }
 
 
+
 //COLOR --------------------------------------------------------------------------------------------------
 color add_color(color a, color b, float amt) {
   return color(
     red(a) + red(b)*amt,
     green(a) + green(b)*amt,
     blue(a) + blue(b)*amt
-  );
-}
-
-
-color mix_color(color a, color b, float amt) {
-  return color(
-    red(a) + (red(b) - red(a))*amt,
-    green(a) + (green(b) - green(a))*amt,
-    blue(a) + (blue(b) - blue(a))*amt
-  );
-}
-
-
-color mult_color(color c, float v) {
-  return color(
-    red(c) * v,
-    green(c) * v,
-    blue(c) * v
   );
 }
 

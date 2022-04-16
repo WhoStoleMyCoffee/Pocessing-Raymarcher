@@ -30,7 +30,8 @@ void calc_rays() {
       if (reflections_enabled && collision.collider.metallic > 0)
         c = ray_reflection(ray_dir, collision, max_ray_bounce).col;
 
-      pixels[y * width + x] = ray_occlusion(collision.pos, c);
+      c = ray_occlusion(collision.pos, c);
+      pixels[y * width + x] = apply_fog(c, collision.dist);
     }
   }
   
@@ -91,7 +92,7 @@ CollisionData ray_reflection(PVector ray_dir, CollisionData coll, int N)
     if (N > 1)  reflection.col = ray_reflection(reflect_vec, reflection, N-1).col; //recursively calculate reflections
   }
 
-  reflection.col = mix_color(coll.col, reflection.col, pow(coll.collider.metallic, 2));
+  reflection.col = lerp_color(coll.col, reflection.col, pow(coll.collider.metallic, 2));
   return reflection;
 }
 
@@ -157,6 +158,18 @@ float soft_shadow(PVector origin, PVector ray_dir, float max_dist) {
   }
   return res;
 }
+
+
+//c : original color
+//d : distance (between 0 and 1)
+color apply_fog(color c, float d)
+{
+  //float amt = constrain(  map(d, 0, 30, 0, 1), 0, 1  );
+  float y = exp(-fog_thickness * d);
+  return lerp_color(c, fog_col, 1-y);
+}
+
+
 
 
 

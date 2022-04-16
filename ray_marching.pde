@@ -22,6 +22,7 @@ final float ray_hit_dist = 0.002; //at what distance to the scene will a ray be 
 final float init_ray_step = 0.01; //initial ray step when marching
 final float shadows_k = 8; //shadow blur amount. higher = less blur
 
+//scene params
 color sky_col1 = color(64, 185, 277); //main sky color
 color sky_col2 = color(166, 233, 245); //sky color at the horizon
 color sunlight_col = color(254, 255, 224);
@@ -29,6 +30,7 @@ float sun_energy = 0.5;
 PVector sun_dir = new PVector(-0.2, 1, 0.1).normalize(); //Must be normalized
 
 color fog_col = color(128);
+float fog_thickness = 0.02;
 // -------------------------------------------------------------------------------------
 
 //RENDERER VARIABLES
