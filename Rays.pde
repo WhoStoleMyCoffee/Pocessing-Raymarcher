@@ -15,18 +15,26 @@ void calc_rays() {
 
       CollisionData collision = march_ray(cam_pos, ray_dir, max_ray_dist);
       color c = collision.col;
-
+      
       if (collision.collider == null) {
-        pixels[y * width + x] = c;
+        pixels[y * width + x] = is_rendering ? c : sky_col2;
         continue;
       }
-
+      
+      //if not rendering, just set the color based on the normal
+      if (!is_rendering) {
+        pixels[y * width + x] = color( map(estimate_normal(collision.pos).dot(ray_dir), -1, 1, 220, 0) );
+        continue;
+      }
+      
       if (reflections_enabled && collision.collider.metallic > 0)
         c = ray_reflection(ray_dir, collision, max_ray_bounce).col;
 
       pixels[y * width + x] = ray_occlusion(collision.pos, c);
     }
   }
+  
+  
 }
 
 
@@ -45,7 +53,7 @@ CollisionData march_ray(PVector origin, PVector ray_dir, float max_dist) {
     Shape closest_shape = null;
     for (Shape shape : shapes)
     {
-      float dist_to_shape = shape.get_SDF(  shape.rot.mult(PVector.sub(ray_pos, shape.pos))  );
+      float dist_to_shape = shape.get_SDF( ray_pos );
       if (dist_to_shape > dist) continue;
       dist = dist_to_shape;
       closest_shape = shape;
@@ -64,7 +72,7 @@ CollisionData march_ray(PVector origin, PVector ray_dir, float max_dist) {
   }
   coll.collider = null;
   coll.dist = max_dist;
-  coll.col = lerp_color(sky_col1, sky_col2, map(ray_dir.y, -1, 0, 0, 1));
+  coll.col = lerp_color(sky_col2, sky_col1, map(max(ray_dir.y, 0), 0, 1, 0, 1)); //sky
   coll.pos = null;
   return coll;
 }
@@ -159,7 +167,7 @@ float sceneSDF(float px, float py, float pz)
   PVector point = new PVector(px, py, pz);
 
   for (Shape shape : shapes)
-    dist = min(shape.get_SDF(shape.rot.mult(PVector.sub(point, shape.pos))), dist);
+    dist = min(shape.get_SDF( point ), dist);
 
   return dist;
 }

@@ -14,7 +14,8 @@ class Shape {
   float metallic = 0;
   Quat rot = new Quat();
   
-  float get_SDF(PVector point) { return 0; }
+  //gp : global point/pos
+  float get_SDF(PVector gp) { return 0; }
   
   Shape set_col(color c) {
     this.col = c;
@@ -28,6 +29,10 @@ class Shape {
     rot = new Quat(rotx, roty, rotz);
     return this;
   }
+  
+  PVector to_local(PVector gp) {
+    return rot.mult(PVector.sub(gp, pos));
+  }
 }
 
 
@@ -39,8 +44,8 @@ class Sphere extends Shape {
     r = _r;
   }
   
-  float get_SDF(PVector p) {
-    return p.mag() - r;
+  float get_SDF(PVector gp) {
+    return this.to_local(gp).mag() - r;
   }
   
 }
@@ -53,10 +58,11 @@ class Box extends Shape {
     bounds = new PVector(xs, ys, zs);
   }
   
+  //for whacky shit:
   //float get_SDF(PVector pos) {
   //  PVector p = new PVector(pos.x % 5 - 2.5, pos.y % 5 - 2.5, pos.z % 5 - 2.5);
-  float get_SDF(PVector p) {
-    
+  float get_SDF(PVector gp) {
+    PVector p = this.to_local(gp);
     PVector q = PVector.sub(new PVector(abs(p.x), abs(p.y), abs(p.z)), bounds);
     return new PVector(max(q.x, 0), max(q.y, 0), max(q.z, 0)).mag() + min(max(q.x, max(q.y, q.z)), 0.0);
   }
@@ -71,10 +77,26 @@ class Plane extends Shape {
     n = normal;
   }
   
-  float get_SDF(PVector p) {
-    return PVector.dot(p, n) - pos.y;
+  float get_SDF(PVector gp) {
+    return PVector.dot(this.to_local(gp), n) - pos.y;
   }
 }
+
+
+class Ground extends Shape {
+  PVector n = new PVector(0, 1, 0);
+  
+  Ground(float x, float y, float z) {
+    pos = new PVector(x, y, z);
+  }
+  
+  float get_SDF(PVector gp) {
+    float h = pos.y + noise(gp.x * 0.1, gp.z * 0.1)*10;
+    return PVector.dot(this.to_local(gp), n) - h;
+  }
+}
+
+
 
 
 
@@ -87,7 +109,8 @@ class ShapeIntersect extends Shape {
     b = _b;
   }
   
-  float get_SDF(PVector p) {
+  float get_SDF(PVector gp) {
+    PVector p = this.to_local(gp);
     return max(a.get_SDF(PVector.sub(p, a.pos)), b.get_SDF(PVector.sub(p, b.pos)));
   }
 }
@@ -102,7 +125,8 @@ class ShapeDiff extends Shape {
     b = _b;
   }
   
-  float get_SDF(PVector p) {
+  float get_SDF(PVector gp) {
+    PVector p = this.to_local(gp);
     return max(a.get_SDF(PVector.sub(p, a.pos)), -b.get_SDF(PVector.sub(p, b.pos)));
   }
 }
@@ -116,7 +140,8 @@ class ShapeUnion extends Shape {
     b = _b;
   }
   
-  float get_SDF(PVector p) {
+  float get_SDF(PVector gp) {
+    PVector p = this.to_local(gp);
     return min(a.get_SDF(PVector.sub(p, a.pos)), b.get_SDF(PVector.sub(p, b.pos)));
   }
 }

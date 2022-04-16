@@ -27,6 +27,21 @@ PVector rotAxis(PVector v, PVector n, float a) {
 }
 
 
+
+//col1 : main sky color
+//col2 : sky color at the horizon
+//sunlight_col : color of the sunlight
+//sun_energy : energy of the sun
+//sun_dir : sun direction
+void set_sky(color col1, color col2, color sun_col, float energy, PVector dir) {
+  sky_col1 = col1;
+  sky_col2 = col2;
+  sunlight_col = sun_col;
+  sun_energy = energy;
+  sun_dir.set(dir);
+}
+
+
 //COLOR --------------------------------------------------------------------------------------------------
 color add_color(color a, color b, float amt) {
   return color(
@@ -42,6 +57,15 @@ color mix_color(color a, color b, float amt) {
     red(a) + (red(b) - red(a))*amt,
     green(a) + (green(b) - green(a))*amt,
     blue(a) + (blue(b) - blue(a))*amt
+  );
+}
+
+
+color mult_color(color c, float v) {
+  return color(
+    red(c) * v,
+    green(c) * v,
+    blue(c) * v
   );
 }
 

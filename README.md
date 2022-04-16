@@ -9,7 +9,5 @@ Very shitty but it's okay ¯\\\_(ツ)_/¯
 - E : Go down
 - O and P : Change camera roll
 - F1 Toggle render mode
-- F2 : Toggle reflections
-- F3 : Toggle occlusion
-- F4 : Take screenshot
+- F2 : Take screenshot
 - Click : Toggle mouse controls
