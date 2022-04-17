@@ -14,7 +14,7 @@ Click : Toggle mouse controls
 
 // CONTROLS ----------------------------------------------------------------------------
 final float fov = HALF_PI;
-final int noise_amt = 6; //how un-detailed it is when not rendering
+final int noise_amt = 8; //how un-detailed it is when not rendering
 final float max_ray_dist = 50;
 final float mouse_sens = 0.01,  cam_spd = 4.0; //camera controls
 final int max_ray_bounce = 3; //for reflections

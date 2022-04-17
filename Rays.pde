@@ -108,11 +108,10 @@ color ray_occlusion(PVector pos, color albedo)
   //SUNLIGHT
   {
     float res = soft_shadow(pos, sun_dir, 999);
-    if (res != 0.0) {
-  
-      float dot = constrain( PVector.dot(estimate_normal(pos), sun_dir), 0, 1 ); //angle
-  
-      c = add_color(c, sunlight_col, dot * res * sun_energy);
+    if (res >= 0.1) {
+      c = add_color(c, sunlight_col,
+        constrain( PVector.dot(estimate_normal(pos), sun_dir), 0, 1 ) //angle
+        * res * sun_energy);
     }
   }
   
@@ -127,7 +126,7 @@ color ray_occlusion(PVector pos, color albedo)
     PVector dir_to_light = PVector.sub(light.pos, pos).normalize();
 
     float res = soft_shadow(pos, dir_to_light, dist_to_light);
-    if (res == 0.0) continue; //ray obstructed
+    if (res < 0.1) continue; //ray obstructed
 
     c = add_color(c, light.col,
       constrain( PVector.dot(estimate_normal(pos), dir_to_light), 0, 1 ) //angle
@@ -143,8 +142,7 @@ color ray_occlusion(PVector pos, color albedo)
 //https://www.iquilezles.org/www/articles/rmshadows/rmshadows.htm
 float soft_shadow(PVector origin, PVector ray_dir, float max_dist) {
   float t = init_ray_step;
-  //float res = 1.0;
-  float res = 50.0; //i have no ideo what these numbers do
+  float res = 1.0;
 
   while (t < max_dist) {
     PVector rp = PVector.add(origin, PVector.mult(ray_dir, t));
@@ -158,7 +156,7 @@ float soft_shadow(PVector origin, PVector ray_dir, float max_dist) {
     res = min(res, shadows_k * h/t);
     t += h;
   }
-  return res;
+  return max(res, 0);
 }
 
 

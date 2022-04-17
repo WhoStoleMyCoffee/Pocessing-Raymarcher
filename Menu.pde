@@ -74,19 +74,22 @@ void setup_scene(int index)
         );
     break;
     case 1:
-      sky_col1 = color(57, 55, 62);
-      sky_col2 = color(76, 82, 95);
-      sunlight_col = color(0);
-      sun_energy = 0;
-      sun_dir = new PVector(0, 1, 0).normalize();
+      sunlight_col = color(147, 129, 27);
+      sun_dir = new PVector(-1, 0.6, 0).normalize();
       
       //tunnel
       shapes.add(new ShapeDiff(0, 0, 0, 
         new ShapeDiff( 0, 0, 0,
-          new Box(0, 0, 0, 4, 4, 8),
-          new Box(0, 0, 0, 3.5, 3.5, 9)),
+          new Box(0, 0, 0, 4, 4, 100),
+          new Box(0, 0, 0, 3.5, 3.5, 101)),
         new Box(0, 4, 0, 2, 2, 2)
         ).set_col(color(51, 51, 83))
+      );
+      
+      //sphere
+      shapes.add( new Sphere(2.2, 0.26, 3, 1)
+        .set_col(color(140, 50, 116))
+        .set_metallic(0.9)
       );
       
       //ground
@@ -94,7 +97,7 @@ void setup_scene(int index)
         .set_col(color(62, 103, 69))
       );
       
-      lights.add( new Light(0, 0, 0,   10, 0.2, color(147, 129, 27)) );
+      lights.add( new Light(0, 7.8, 0,   20, 0.7, color(130, 126, 0)) );
     break;
     default:
       //ground
