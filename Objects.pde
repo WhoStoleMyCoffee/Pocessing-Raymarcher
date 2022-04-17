@@ -91,7 +91,7 @@ class Ground extends Shape {
   }
   
   float get_SDF(PVector gp) {
-    float h = pos.y + noise(gp.x * 0.1, gp.z * 0.1)*10;
+    float h = pos.y + noise(gp.x * 0.1, gp.z * 0.1)*15;
     return PVector.dot(this.to_local(gp), n) - h;
   }
 }

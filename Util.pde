@@ -6,9 +6,9 @@ PVector vec_reflect(PVector dir, PVector normal) {
 
 PVector estimate_normal(PVector p) {
   return new PVector(
-    sceneSDF(p.x + init_ray_step, p.y, p.z) - sceneSDF(p.x - init_ray_step, p.y, p.z),
-    sceneSDF(p.x, p.y + init_ray_step, p.z) - sceneSDF(p.x, p.y - init_ray_step, p.z),
-    sceneSDF(p.x, p.y, p.z + init_ray_step) - sceneSDF(p.x, p.y, p.z - init_ray_step)
+    sceneSDF(p.x + EPSILON, p.y, p.z) - sceneSDF(p.x - EPSILON, p.y, p.z),
+    sceneSDF(p.x, p.y + EPSILON, p.z) - sceneSDF(p.x, p.y - EPSILON, p.z),
+    sceneSDF(p.x, p.y, p.z + EPSILON) - sceneSDF(p.x, p.y, p.z - EPSILON)
   ).normalize();
 }
 

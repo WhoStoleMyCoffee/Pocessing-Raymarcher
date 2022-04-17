@@ -164,9 +164,11 @@ float soft_shadow(PVector origin, PVector ray_dir, float max_dist) {
 //d : distance (between 0 and 1)
 color apply_fog(color c, float d)
 {
-  //float amt = constrain(  map(d, 0, 30, 0, 1), 0, 1  );
-  float y = exp(-fog_thickness * d);
-  return lerp_color(c, fog_col, 1-y);
+  return color(
+    lerp(red(fog_col),   red(c),   exp(-fog_thickness * d)),
+    lerp(green(fog_col), green(c), exp(-fog_thickness * d * 2)),
+    lerp(blue(fog_col),  blue(c),  exp(-fog_thickness * d  * 4))
+  );
 }
 
 

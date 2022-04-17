@@ -18,8 +18,8 @@ final int noise_amt = 10; //how un-detailed it is when not rendering
 final float max_ray_dist = 50;
 final float mouse_sens = 0.01,  cam_spd = 4.0; //camera controls
 final int max_ray_bounce = 3; //for reflections
-final float ray_hit_dist = 0.002; //at what distance to the scene will a ray be considered to have hit an object
-final float init_ray_step = 0.01; //initial ray step when marching
+final float ray_hit_dist = 0.001; //at what distance to the scene will a ray be considered to have hit an object
+final float init_ray_step = 0.05; //initial ray step when marching
 final float shadows_k = 8; //shadow blur amount. higher = less blur
 
 //scene params
@@ -30,7 +30,7 @@ float sun_energy = 0.5;
 PVector sun_dir = new PVector(-0.2, 1, 0.1).normalize(); //Must be normalized
 
 color fog_col = color(128);
-float fog_thickness = 0.02;
+float fog_thickness = 0.01;
 // -------------------------------------------------------------------------------------
 
 //RENDERER VARIABLES
@@ -141,7 +141,7 @@ void draw() {
   // CAMERA ROTATION -----------------------------------------------------------------------------------------------------------
   if (cam_control) {
     cam_angle.y += (mouseX - pmouseX) * mouse_sens;
-    cam_angle.x += (mouseY - pmouseY) * mouse_sens;
+    cam_angle.x = constrain(cam_angle.x + (mouseY - pmouseY) * mouse_sens, -HALF_PI, HALF_PI);
     rotation_q = new Quat(cam_angle);
     noise_step = noise_amt;
   }
