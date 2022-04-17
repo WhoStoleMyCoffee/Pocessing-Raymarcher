@@ -12,6 +12,7 @@ void start_button()
 
 void clear_scene()
 {
+  max_ray_dist = 50;
   shapes = new ArrayList<Shape>();
   lights = new ArrayList<Light>();
   cam_pos = new PVector(0, 0, 0);
@@ -96,8 +97,14 @@ void setup_scene(int index)
       shapes.add( new Plane(0, -0.5, 0, new PVector(0, 1, 0))
         .set_col(color(62, 103, 69))
       );
+    break;
+    case 2:
+      max_ray_dist = 100;
+      shapes.add( new Fractal(new Box(0, 0, 0, 1, 1, 1), 4  )
+        .set_col(color(51))
+      );
       
-      lights.add( new Light(0, 7.8, 0,   20, 0.7, color(130, 126, 0)) );
+      lights.add( new Light(0, 7.8, 0,   20, 0.7, color(130, 126, 30)) );
     break;
     default:
       //ground

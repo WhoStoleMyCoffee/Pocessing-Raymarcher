@@ -9,7 +9,7 @@ class CollisionData {
 
 
 class Shape {
-  PVector pos;
+  PVector pos = new PVector();
   color col = color(0);
   float metallic = 0;
   Quat rot = new Quat();
@@ -57,14 +57,30 @@ class Box extends Shape {
     pos = new PVector(x, y, z);
     bounds = new PVector(xs, ys, zs);
   }
-  
-  //for whacky shit:
-  //float get_SDF(PVector pos) {
-  //  PVector p = new PVector(pos.x % 5 - 2.5, pos.y % 5 - 2.5, pos.z % 5 - 2.5);
   float get_SDF(PVector gp) {
     PVector p = this.to_local(gp);
     PVector q = PVector.sub(new PVector(abs(p.x), abs(p.y), abs(p.z)), bounds);
     return new PVector(max(q.x, 0), max(q.y, 0), max(q.z, 0)).mag() + min(max(q.x, max(q.y, q.z)), 0.0);
+  }
+}
+
+
+
+class Fractal extends Shape {
+  Shape s;
+  float c;
+  float o; //offset
+  
+  Fractal(Shape _s, float repeat_rate) {
+    s = _s;
+    c = repeat_rate;
+    o = c*0.5;
+  }
+  
+  float get_SDF(PVector gp) {
+    return s.get_SDF(
+      this.to_local( new PVector(abs(gp.x) % c - o, abs(gp.y) % c - o, abs(gp.z) % c - o) )
+    );
   }
 }
 

@@ -15,7 +15,7 @@ Click : Toggle mouse controls
 // CONTROLS ----------------------------------------------------------------------------
 final float fov = HALF_PI;
 final int noise_amt = 8; //how un-detailed it is when not rendering
-final float max_ray_dist = 50;
+float max_ray_dist = 50;
 final float mouse_sens = 0.01,  cam_spd = 4.0; //camera controls
 final int max_ray_bounce = 3; //for reflections
 final float ray_hit_dist = 0.01; //at what distance to the scene will a ray be considered to have hit an object
@@ -93,7 +93,7 @@ void setup() {
     .setFont(createFont("arial", 14));
   
   
-  String[] levels = {"test", "world"};
+  String[] levels = {"test", "world", "boxes"};
   cp5.addScrollableList("levels")
     .setPosition(20, 120)
     .setSize(200, 100)
@@ -159,7 +159,7 @@ void draw() {
   
   switch(current_scene)
   {
-    case 1:
+    case 2:
       lights.get(0).pos.set(cam_pos);
     break;
     default:
