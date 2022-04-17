@@ -83,20 +83,6 @@ class Plane extends Shape {
 }
 
 
-class Ground extends Shape {
-  PVector n = new PVector(0, 1, 0);
-  
-  Ground(float x, float y, float z) {
-    pos = new PVector(x, y, z);
-  }
-  
-  float get_SDF(PVector gp) {
-    float h = pos.y + noise(gp.x * 0.1, gp.z * 0.1)*15;
-    return PVector.dot(this.to_local(gp), n) - h;
-  }
-}
-
-
 
 
 
@@ -111,7 +97,7 @@ class ShapeIntersect extends Shape {
   
   float get_SDF(PVector gp) {
     PVector p = this.to_local(gp);
-    return max(a.get_SDF(PVector.sub(p, a.pos)), b.get_SDF(PVector.sub(p, b.pos)));
+    return max(a.get_SDF(p), b.get_SDF(p));
   }
 }
 
@@ -127,7 +113,7 @@ class ShapeDiff extends Shape {
   
   float get_SDF(PVector gp) {
     PVector p = this.to_local(gp);
-    return max(a.get_SDF(PVector.sub(p, a.pos)), -b.get_SDF(PVector.sub(p, b.pos)));
+    return max(  a.get_SDF(p), -b.get_SDF(p)  );
   }
 }
 
@@ -142,7 +128,7 @@ class ShapeUnion extends Shape {
   
   float get_SDF(PVector gp) {
     PVector p = this.to_local(gp);
-    return min(a.get_SDF(PVector.sub(p, a.pos)), b.get_SDF(PVector.sub(p, b.pos)));
+    return min(a.get_SDF(p), b.get_SDF(p));
   }
 }
 

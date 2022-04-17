@@ -14,12 +14,12 @@ Click : Toggle mouse controls
 
 // CONTROLS ----------------------------------------------------------------------------
 final float fov = HALF_PI;
-final int noise_amt = 10; //how un-detailed it is when not rendering
+final int noise_amt = 6; //how un-detailed it is when not rendering
 final float max_ray_dist = 50;
 final float mouse_sens = 0.01,  cam_spd = 4.0; //camera controls
 final int max_ray_bounce = 3; //for reflections
-final float ray_hit_dist = 0.001; //at what distance to the scene will a ray be considered to have hit an object
-final float init_ray_step = 0.05; //initial ray step when marching
+final float ray_hit_dist = 0.01; //at what distance to the scene will a ray be considered to have hit an object
+final float init_ray_step = 0.1; //initial ray step when marching
 final float shadows_k = 8; //shadow blur amount. higher = less blur
 
 //scene params
@@ -27,7 +27,7 @@ color sky_col1 = color(64, 185, 277); //main sky color
 color sky_col2 = color(166, 233, 245); //sky color at the horizon
 color sunlight_col = color(254, 255, 224);
 float sun_energy = 0.5;
-PVector sun_dir = new PVector(-0.2, 1, 0.1).normalize(); //Must be normalized
+PVector sun_dir = new PVector(0, 1, 0).normalize(); //Must be normalized
 
 color fog_col = color(128);
 float fog_thickness = 0.01;
@@ -64,11 +64,14 @@ boolean epressed = false;
 //MENU
 ControlP5 cp5;
 boolean is_in_menu = true;
+int current_scene = -1;
 
 
 
 
 void setup() {
+  noiseSeed(0);
+  
   size(800, 800);
   surface.setTitle("Ray Marcher | Menu");
 
@@ -116,6 +119,7 @@ void draw() {
   
   
   delta = 1 / frameRate;
+  surface.setTitle("Ray Marcher | " + str(floor(frameRate)) + "fps");
 
   if (noise_step > 0) {
     loadPixels();
@@ -148,8 +152,19 @@ void draw() {
   
   if (!is_rendering)
     noise_step = noise_amt;
-
-  surface.setTitle("Ray Marcher | " + str(floor(frameRate)) + "fps");
+  
+  
+  
+  
+  
+  switch(current_scene)
+  {
+    case 1:
+      lights.get(0).pos.set(cam_pos);
+    break;
+    default:
+    break;
+  }
 }
 
 
@@ -173,6 +188,7 @@ void keyPressed() {
     
     is_in_menu = true;
     clear_scene();
+    current_scene = -1;
     cp5.show();
     surface.setTitle("Ray Marcher | Menu");
   }

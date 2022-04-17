@@ -98,7 +98,6 @@ CollisionData ray_reflection(PVector ray_dir, CollisionData coll, int N)
 
 
 
-// TODO soft shadows
 //  pos : the contact point on an object
 //  albedo : the original color of that object at that position
 color ray_occlusion(PVector pos, color albedo)
@@ -110,12 +109,13 @@ color ray_occlusion(PVector pos, color albedo)
   {
     float res = soft_shadow(pos, sun_dir, 999);
     if (res != 0.0) {
-
+  
       float dot = constrain( PVector.dot(estimate_normal(pos), sun_dir), 0, 1 ); //angle
-
+  
       c = add_color(c, sunlight_col, dot * res * sun_energy);
     }
   }
+  
 
 
   //LIGHTS IN THE SCENE
@@ -132,7 +132,8 @@ color ray_occlusion(PVector pos, color albedo)
     c = add_color(c, light.col,
       constrain( PVector.dot(estimate_normal(pos), dir_to_light), 0, 1 ) //angle
       * constrain( map(dist_to_light, 0, light.r, light.energy, 0), 0, 1 ) //distance
-      * res);
+      * res
+      );
   }
   return c;
 }
@@ -142,7 +143,8 @@ color ray_occlusion(PVector pos, color albedo)
 //https://www.iquilezles.org/www/articles/rmshadows/rmshadows.htm
 float soft_shadow(PVector origin, PVector ray_dir, float max_dist) {
   float t = init_ray_step;
-  float res = 1.0;
+  //float res = 1.0;
+  float res = 50.0; //i have no ideo what these numbers do
 
   while (t < max_dist) {
     PVector rp = PVector.add(origin, PVector.mult(ray_dir, t));

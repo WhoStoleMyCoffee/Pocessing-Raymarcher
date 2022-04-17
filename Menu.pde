@@ -1,6 +1,7 @@
 void start_button()
 {
   int i = (int)cp5.get(ScrollableList.class, "levels").getValue();
+  current_scene = i;
   setup_scene(i);
   
   cp5.hide();
@@ -16,6 +17,12 @@ void clear_scene()
   cam_pos = new PVector(0, 0, 0);
   cam_angle = new PVector();
   rotation_q = new Quat();
+  
+  sky_col1 = color(64, 185, 277);
+  sky_col2 = color(166, 233, 245);
+  sunlight_col = color(254, 255, 224);
+  sun_energy = 0.5;
+  sun_dir = new PVector(0, 1, 0).normalize();
   
   reflections_enabled = true;
   occlusion_enabled = true;
@@ -65,19 +72,32 @@ void setup_scene(int index)
       shapes.add( new Box(3, 5, 6, 4, 0.1, 4)
         .set_rot(0, 0, 0.5)
         );
-    
-      //lights
-      //lights.add( new Light(5, -2,  3,   6,   0.5, color(27, 179, 247)) );
     break;
     case 1:
-      cam_pos.y = 10;
-      sun_dir = new PVector(1, 0.5, 0).normalize();
+      sky_col1 = color(57, 55, 62);
+      sky_col2 = color(76, 82, 95);
+      sunlight_col = color(0);
+      sun_energy = 0;
+      sun_dir = new PVector(0, 1, 0).normalize();
       
-      shapes.add( new Ground(0.0, -0.5, 0.0)
-        .set_col(color(82, 113, 89))
-        );
+      //tunnel
+      shapes.add(new ShapeDiff(0, 0, 0, 
+        new ShapeDiff( 0, 0, 0,
+          new Box(0, 0, 0, 4, 4, 8),
+          new Box(0, 0, 0, 3.5, 3.5, 9)),
+        new Box(0, 4, 0, 2, 2, 2)
+        ).set_col(color(51, 51, 83))
+      );
+      
+      //ground
+      shapes.add( new Plane(0, -0.5, 0, new PVector(0, 1, 0))
+        .set_col(color(62, 103, 69))
+      );
+      
+      lights.add( new Light(0, 0, 0,   10, 0.2, color(147, 129, 27)) );
     break;
     default:
+      //ground
       shapes.add( new Plane(0, -0.5, 0, new PVector(0, 1, 0))
         .set_col(color(82, 113, 89))
         );
