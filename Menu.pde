@@ -100,9 +100,11 @@ void setup_scene(int index)
     break;
     case 2:
       max_ray_dist = 100;
-      shapes.add( new Fractal(new Box(0, 0, 0, 1, 1, 1), 4  )
+      
+      shapes.add( new Fractal(new Box(0, 0, 0, 1, 1, 1), 4,5,4  )
         .set_col(color(51))
       );
+      
       
       lights.add( new Light(0, 7.8, 0,   20, 0.7, color(130, 126, 30)) );
     break;

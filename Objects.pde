@@ -68,19 +68,17 @@ class Box extends Shape {
 
 class Fractal extends Shape {
   Shape s;
-  float c;
-  float o; //offset
+  PVector c;
   
-  Fractal(Shape _s, float repeat_rate) {
+  //x y and z 'r's are repeat rates
+  Fractal(Shape _s, float xr, float yr, float zr) {
     s = _s;
-    c = repeat_rate;
-    o = c*0.5;
+    c = new PVector(xr, yr, zr);
   }
   
   float get_SDF(PVector gp) {
-    return s.get_SDF(
-      this.to_local( new PVector(abs(gp.x) % c - o, abs(gp.y) % c - o, abs(gp.z) % c - o) )
-    );
+    PVector p = this.to_local( new PVector(abs(gp.x) % c.x - c.x*0.5, abs(gp.y) % c.y - c.y*0.5, abs(gp.z) % c.z - c.z*0.5) );
+    return s.get_SDF(p);
   }
 }
 
